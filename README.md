@@ -39,7 +39,7 @@ Then add the `prospector_adapter` shield to the dongle in your `build.yaml`:
 ```yaml
 ---
 include:
-  - board: seeeduino_xiao_ble
+  - board: xiao_ble
     shield: [YOUR KEYBOARD SHIELD]_dongle prospector_adapter
 ```
 
