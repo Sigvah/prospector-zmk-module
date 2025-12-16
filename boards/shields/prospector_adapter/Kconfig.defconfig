@@ -3,6 +3,10 @@ if SHIELD_PROSPECTOR_ADAPTER
 config ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING
     default y
 
+config ZMK_USB
+    default y
+    depends on !ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL
+
 config ZMK_DISPLAY
    default y
 
