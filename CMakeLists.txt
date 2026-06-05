@@ -15,7 +15,13 @@ if(CONFIG_SHIELD_PROSPECTOR_ADAPTER)
                 target_sources(app PRIVATE src/behaviors/behavior_caps_word.c)
         endif()
 
-        zephyr_library_sources(src/events/split_central_status_changed.c)
-        zephyr_library_sources(src/split/bluetooth/central_status_changed_observer.c)
+        # The split-central observer and its event include <zmk/ble.h> and use
+        # BLE split-central APIs, which only exist when Bluetooth is enabled.
+        # Building them without BLE fails with errors like 'CONFIG_BT_MAX_PAIRED'
+        # undeclared, so only compile them when ZMK BLE support is present.
+        if(CONFIG_ZMK_BLE)
+                zephyr_library_sources(src/events/split_central_status_changed.c)
+                zephyr_library_sources(src/split/bluetooth/central_status_changed_observer.c)
+        endif()
 
 endif()

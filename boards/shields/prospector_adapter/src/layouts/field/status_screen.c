@@ -9,10 +9,12 @@
 #include <fonts.h>
 
 static struct zmk_widget_layer_label layer_label_widget;
-static struct zmk_widget_battery_label battery_label_widget;
 static struct zmk_widget_line_segments line_segments_widget;
 static struct zmk_widget_modifier_indicator modifier_indicator_widget;
+#if IS_ENABLED(CONFIG_ZMK_BLE)
+static struct zmk_widget_battery_label battery_label_widget;
 static struct zmk_widget_output output_widget;
+#endif
 
 lv_obj_t *zmk_display_status_screen() {
     lv_obj_t *screen = lv_obj_create(NULL);
@@ -26,17 +28,23 @@ lv_obj_t *zmk_display_status_screen() {
     zmk_widget_layer_label_init(&layer_label_widget, screen);
     lv_obj_align(zmk_widget_layer_label_obj(&layer_label_widget), LV_ALIGN_TOP_LEFT, 9, 14);
 
+#if IS_ENABLED(CONFIG_ZMK_BLE)
     zmk_widget_output_init(&output_widget, screen);
     lv_obj_align(zmk_widget_output_obj(&output_widget), LV_ALIGN_TOP_LEFT, 4, 52);
 
     zmk_widget_battery_label_init(&battery_label_widget, screen);
     lv_obj_align(zmk_widget_battery_label_obj(&battery_label_widget), LV_ALIGN_BOTTOM_LEFT, 9, -20);
+#endif
 
     zmk_widget_modifier_indicator_init(&modifier_indicator_widget, screen);
 
     zmk_widget_line_segments_set_labels(&line_segments_widget,
                                         zmk_widget_layer_label_obj(&layer_label_widget),
+#if IS_ENABLED(CONFIG_ZMK_BLE)
                                         zmk_widget_battery_label_obj(&battery_label_widget));
+#else
+                                        NULL);
+#endif
 
     return screen;
 }

@@ -2,7 +2,14 @@
 
 #include <lvgl.h>
 #include <zephyr/kernel.h>
+
+#if IS_ENABLED(CONFIG_ZMK_BLE)
 #include <zmk/ble.h>
+#else
+/* The output widget is only built with Bluetooth, but this header is still
+ * included by status_screen.c. Provide a fallback so it compiles without BLE. */
+#define ZMK_BLE_PROFILE_COUNT 1
+#endif
 
 struct zmk_widget_output {
     sys_snode_t node;
