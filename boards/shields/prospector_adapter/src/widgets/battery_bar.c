@@ -2,17 +2,31 @@
 
 #include <zmk/display.h>
 #include <zmk/battery.h>
+#include <zmk/event_manager.h>
+
+#if IS_ENABLED(CONFIG_ZMK_BLE)
 #include <zmk/ble.h>
 #include <zmk/events/battery_state_changed.h>
 #include <zmk/events/split_central_status_changed.h>
-#include <zmk/event_manager.h>
+#endif
 
 #include <fonts.h>
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
+// The peripheral battery/connection widgets rely on the BLE split central. When
+// Bluetooth is disabled there are no peripherals to display, so fall back to a
+// single placeholder slot to keep the layout intact.
+#if IS_ENABLED(CONFIG_ZMK_BLE)
+#define PROSPECTOR_PERIPHERAL_COUNT ZMK_SPLIT_BLE_PERIPHERAL_COUNT
+#else
+#define PROSPECTOR_PERIPHERAL_COUNT 1
+#endif
+
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
+
+#if IS_ENABLED(CONFIG_ZMK_BLE)
 
 bool initialized = false;
 
@@ -128,6 +142,8 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_battery_bar_connection, struct connection_upd
                             battery_bar_connection_update_cb, battery_bar_get_connection_state);
 ZMK_SUBSCRIPTION(widget_battery_bar_connection, zmk_split_central_status_changed);
 
+#endif // IS_ENABLED(CONFIG_ZMK_BLE)
+
 int zmk_widget_battery_bar_init(struct zmk_widget_battery_bar *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
     lv_obj_set_width(widget->obj, lv_pct(100));
@@ -145,7 +161,7 @@ int zmk_widget_battery_bar_init(struct zmk_widget_battery_bar *widget, lv_obj_t 
 
     // lv_obj_add_flag(widget->obj, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 
-    for (int i = 0; i < ZMK_SPLIT_BLE_PERIPHERAL_COUNT; i++) {
+    for (int i = 0; i < PROSPECTOR_PERIPHERAL_COUNT; i++) {
         lv_obj_t *info_container = lv_obj_create(widget->obj);
         lv_obj_center(info_container);
         lv_obj_set_height(info_container, lv_pct(100));
@@ -194,9 +210,11 @@ int zmk_widget_battery_bar_init(struct zmk_widget_battery_bar *widget, lv_obj_t 
 
     sys_slist_append(&widgets, &widget->node);
 
+#if IS_ENABLED(CONFIG_ZMK_BLE)
     widget_battery_bar_battery_init();
     widget_battery_bar_connection_init();
     initialized = true;
+#endif
 
     return 0;
 }
